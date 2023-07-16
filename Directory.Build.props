@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisMode>All</AnalysisMode>
+  </PropertyGroup>
+
+</Project>
