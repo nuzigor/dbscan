@@ -22,8 +22,8 @@ public class ClusterModel<T>
 {
     public ClusterModel(IReadOnlyCollection<IReadOnlyCollection<T>> clusters, IReadOnlyCollection<T> noise)
     {
-        Clusters = clusters;
-        Noise = noise;
+        Clusters = clusters ?? throw new ArgumentNullException(nameof(clusters));
+        Noise = noise ?? throw new ArgumentNullException(nameof(noise));
     }
 
     /// <summary>

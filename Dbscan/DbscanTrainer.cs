@@ -58,7 +58,7 @@ public class DbscanTrainer<T>
         ArgumentNullException.ThrowIfNull(getDirectlyReachablePoints);
 
         var clusters = new List<IReadOnlyCollection<T>>();
-        var visited = new Dictionary<T, bool>(comparer);
+        var visited = new Dictionary<T, Label>(comparer);
 
         foreach (var p in points)
         {
@@ -70,7 +70,7 @@ public class DbscanTrainer<T>
             var directlyReachablePoints = getDirectlyReachablePoints(p);
             if (directlyReachablePoints.Count >= minimumPointsPerCluster)
             {
-                visited.Add(p, true);
+                visited.Add(p, Label.Clustered);
                 clusters.Add(BuildCluster(
                         visited,
                         getDirectlyReachablePoints,
@@ -79,11 +79,11 @@ public class DbscanTrainer<T>
             }
             else
             {
-                visited.Add(p, false);
+                visited.Add(p, Label.Noise);
             }
         }
 
-        var noise = visited.Where(x => !x.Value).Select(x => x.Key).ToArray();
+        var noise = visited.Where(x => x.Value != Label.Clustered).Select(x => x.Key).ToArray();
         return new ClusterModel<T>(clusters, noise);
     }
 
@@ -139,18 +139,17 @@ public class DbscanTrainer<T>
     }
 
     private IReadOnlyCollection<T> BuildCluster(
-        Dictionary<T, bool> visited,
+        Dictionary<T, Label> visited,
         Func<T, IReadOnlyCollection<T>> getDirectlyReachablePoints,
         T point,
         IReadOnlyCollection<T> directlyReachablePoints)
     {
         var clusterPoints = new List<T>() { point };
         var queue = new Queue<T>(directlyReachablePoints);
-        var reachablePointsSet = new HashSet<T>(directlyReachablePoints);
-        reachablePointsSet.Add(point);
+        var reachablePointsSet = new HashSet<T>(directlyReachablePoints) { point };
         while (queue.TryDequeue(out var newPoint))
         {
-            if (!visited.TryGetValue(newPoint, out var clustered))
+            if (!visited.TryGetValue(newPoint, out var label))
             {
                 var newDirectlyReachablePoints = getDirectlyReachablePoints(newPoint);
                 if (newDirectlyReachablePoints.Count >= minimumPointsPerCluster)
@@ -165,9 +164,9 @@ public class DbscanTrainer<T>
                 }
             }
             
-            if (!clustered)
+            if (label != Label.Clustered)
             {
-                visited[newPoint] = true;
+                visited[newPoint] = Label.Clustered;
                 clusterPoints.Add(newPoint);
             }
         }
@@ -183,8 +182,7 @@ public class DbscanTrainer<T>
     {
         var clusterPoints = new List<int>() { pointIndex };
         var queue = new Queue<int>(directlyReachablePoints);
-        var reachablePointsSet = new HashSet<int>(directlyReachablePoints);
-        reachablePointsSet.Add(pointIndex);
+        var reachablePointsSet = new HashSet<int>(directlyReachablePoints) { pointIndex };
         while (queue.TryDequeue(out var newPointIndex))
         {
             var newPointLabel = labels[newPointIndex];
