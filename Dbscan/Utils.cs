@@ -14,16 +14,28 @@
 
 namespace Nuzigor.Dbscan;
 
+/// <summary>
+/// Various utility methods to create 'range query' functions.
+/// </summary>
 public static class Utils
 {
+    /// <summary>
+    /// A delegate to return a distance between two points.
+    /// </summary>
     public delegate double GetDistance<T>(T point1, T point2);
 
+    /// <summary>
+    /// Creates a function which pre-calculates neighbors of every point.
+    /// </summary>
     public static Func<T, IReadOnlyCollection<T>> CreateFullScanCachedNeighborsSearcher<T>(
         IReadOnlyCollection<T> points,
         GetDistance<T> distanceCalculator,
         double epsilon)
         where T: notnull => CreateFullScanCachedNeighborsSearcher(points, null, distanceCalculator, epsilon);
 
+    /// <summary>
+    /// Creates a function which pre-calculates neighbors of every point.
+    /// </summary>
     public static Func<T, IReadOnlyCollection<T>> CreateFullScanCachedNeighborsSearcher<T>(
         IReadOnlyCollection<T> points,
         IEqualityComparer<T>? comparer,
@@ -52,6 +64,9 @@ public static class Utils
         return (T p) => neighborsSet[p];
     }
 
+    /// <summary>
+    /// Creates a function which returns neighbors of every point.
+    /// </summary>
     public static Func<T, IReadOnlyCollection<T>> CreateFullScanNeighborsSearcher<T>(
         IReadOnlyCollection<T> points,
         GetDistance<T> distanceCalculator,
@@ -64,11 +79,17 @@ public static class Utils
         return (T point) => points.Where(x => distanceCalculator(point, x) < epsilon).ToArray();
     }
 
+    /// <summary>
+    /// Creates a function which pre-calculates distances between every two points.
+    /// </summary>
     public static Func<T, double, IReadOnlyCollection<T>> CreateFullScanCachedNeighborsSearcher<T>(
         IReadOnlyCollection<T> points,
         GetDistance<T> distanceCalculator)
         where T : notnull => CreateFullScanCachedNeighborsSearcher(points, null, distanceCalculator);
 
+    /// <summary>
+    /// Creates a function which pre-calculates distances between every two points.
+    /// </summary>
     public static Func<T, double, IReadOnlyCollection<T>> CreateFullScanCachedNeighborsSearcher<T>(
         IReadOnlyCollection<T> points,
         IEqualityComparer<T>? comparer,

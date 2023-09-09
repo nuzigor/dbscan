@@ -31,7 +31,7 @@ public class DbscanTrainer<T>
     readonly int minimumPointsPerCluster;
     readonly IEqualityComparer<T>? comparer;
 
-    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, or null to use the default EqualityComparer<T> for the type of the key.</param>
+    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, or null to use the default EqualityComparer{T} for the type of the key.</param>
     /// <param name="options">The options with  minimum number of points required to create a cluster or to add additional points to the cluster.</param>
     public DbscanTrainer(IEqualityComparer<T>? comparer, DbscanOptions options)
     {

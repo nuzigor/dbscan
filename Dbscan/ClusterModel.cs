@@ -20,6 +20,9 @@ namespace Nuzigor.Dbscan;
 /// <typeparam name="T">The type of elements in the cluster.</typeparam>
 public class ClusterModel<T>
 {
+    /// <summary>
+    /// Creates cluster model.
+    /// </summary>
     public ClusterModel(IReadOnlyCollection<IReadOnlyCollection<T>> clusters, IReadOnlyCollection<T> noise)
     {
         Clusters = clusters ?? throw new ArgumentNullException(nameof(clusters));

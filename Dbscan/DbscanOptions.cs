@@ -14,7 +14,13 @@
 
 namespace Nuzigor.Dbscan;
 
+/// <summary>
+/// Dbscan trainer options.
+/// </summary>
 public class DbscanOptions
 {
+    /// <summary>
+    /// Gets/Sets the minimum number of points required to form a dense region.
+    /// </summary>
     public int MinimumPointsPerCluster { get; set; }
 }
