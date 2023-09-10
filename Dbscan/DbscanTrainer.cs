@@ -35,7 +35,10 @@ public class DbscanTrainer<T>
     /// <param name="options">The options with  minimum number of points required to create a cluster or to add additional points to the cluster.</param>
     public DbscanTrainer(IEqualityComparer<T>? comparer, DbscanOptions options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
 
         this.comparer = comparer;
         minimumPointsPerCluster = options.MinimumPointsPerCluster;
@@ -54,8 +57,15 @@ public class DbscanTrainer<T>
     /// <returns>A <see cref="ClusterModel{T}"/> containing the list of clusters and a list of unclustered points.</returns>
     public ClusterModel<T> Fit(IEnumerable<T> points, Func<T, IReadOnlyCollection<T>> getDirectlyReachablePoints)
     {
-        ArgumentNullException.ThrowIfNull(points);
-        ArgumentNullException.ThrowIfNull(getDirectlyReachablePoints);
+        if (points is null)
+        {
+            throw new ArgumentNullException(nameof(points));
+        }
+
+        if (getDirectlyReachablePoints is null)
+        {
+            throw new ArgumentNullException(nameof(getDirectlyReachablePoints));
+        }
 
         var clusters = new List<IReadOnlyCollection<T>>();
         var visited = new Dictionary<T, Label>(comparer);
@@ -87,57 +97,6 @@ public class DbscanTrainer<T>
         return new ClusterModel<T>(clusters, noise);
     }
 
-    /// <summary>
-    /// Run the DBSCAN algorithm on an indexed collection of points.
-    /// </summary>
-    /// <param name="points">The indexed collection of elements to cluster.</param>
-    /// <param name="getDirectlyReachablePoints">The function which returns neighbor indexes within epsilon parameter radius.</param>
-    /// <returns>A <see cref="ClusterModel{T}"/> containing the list of clusters and a list of unclustered points.</returns>
-    public ClusterModel<int> FitIndexed(IReadOnlyList<T> points, Func<int, IReadOnlyCollection<int>> getDirectlyReachablePoints)
-    {
-        ArgumentNullException.ThrowIfNull(points);
-        ArgumentNullException.ThrowIfNull(getDirectlyReachablePoints);
-
-        var clusters = new List<IReadOnlyCollection<int>>();
-        var labels = new Label[points.Count];
-
-        for (int i = 0; i < points.Count; i++)
-        {
-            if (labels[i] != Label.None)
-            {
-                continue;
-            }
-
-            var directlyReachablePoints = getDirectlyReachablePoints(i);
-            if (directlyReachablePoints.Count >= minimumPointsPerCluster)
-            {
-                labels[i] = Label.Clustered;
-                clusters.Add(BuildCluster(
-                        getDirectlyReachablePoints,
-                        labels,
-                        i,
-                        directlyReachablePoints));
-            }
-            else
-            {
-                labels[i] = Label.Noise;
-            }
-        }
-
-        var noiseCount = labels.Count(x => x == Label.Noise);
-        var noise = new int[noiseCount];
-        var noiseIndex = 0;
-        for (var i = 0; i < points.Count; i++)
-        {
-            if (labels[i] == Label.Noise)
-            {
-                noise[noiseIndex++] = i;
-            }
-        }
-
-        return new ClusterModel<int>(clusters, noise);
-    }
-
     private IReadOnlyCollection<T> BuildCluster(
         Dictionary<T, Label> visited,
         Func<T, IReadOnlyCollection<T>> getDirectlyReachablePoints,
@@ -147,8 +106,14 @@ public class DbscanTrainer<T>
         var clusterPoints = new List<T>() { point };
         var queue = new Queue<T>(directlyReachablePoints);
         var reachablePointsSet = new HashSet<T>(directlyReachablePoints) { point };
+#if NET6_0_OR_GREATER
         while (queue.TryDequeue(out var newPoint))
         {
+#else
+        while (queue.Count > 0)
+        {
+            var newPoint = queue.Dequeue();
+#endif
             if (!visited.TryGetValue(newPoint, out var label))
             {
                 var newDirectlyReachablePoints = getDirectlyReachablePoints(newPoint);
@@ -168,43 +133,6 @@ public class DbscanTrainer<T>
             {
                 visited[newPoint] = Label.Clustered;
                 clusterPoints.Add(newPoint);
-            }
-        }
-
-        return clusterPoints;
-    }
-
-    private IReadOnlyCollection<int> BuildCluster(
-        Func<int, IReadOnlyCollection<int>> getDirectlyReachablePoints,
-        Label[] labels,
-        int pointIndex,
-        IReadOnlyCollection<int> directlyReachablePoints)
-    {
-        var clusterPoints = new List<int>() { pointIndex };
-        var queue = new Queue<int>(directlyReachablePoints);
-        var reachablePointsSet = new HashSet<int>(directlyReachablePoints) { pointIndex };
-        while (queue.TryDequeue(out var newPointIndex))
-        {
-            var newPointLabel = labels[newPointIndex];
-            if (newPointLabel == Label.None)
-            {
-                var newDirectlyReachablePoints = getDirectlyReachablePoints(newPointIndex);
-                if (newDirectlyReachablePoints.Count >= minimumPointsPerCluster)
-                {
-                    foreach (var p in newDirectlyReachablePoints)
-                    {
-                        if (reachablePointsSet.Add(p))
-                        {
-                            queue.Enqueue(p);
-                        }
-                    }
-                }
-            }
-
-            if (newPointLabel != Label.Clustered)
-            {
-                labels[newPointIndex] = Label.Clustered;
-                clusterPoints.Add(newPointIndex);
             }
         }
 
