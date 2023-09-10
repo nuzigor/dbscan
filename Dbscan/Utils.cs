@@ -43,8 +43,15 @@ public static class Utils
         double epsilon)
         where T: notnull
     {
-        ArgumentNullException.ThrowIfNull(points);
-        ArgumentNullException.ThrowIfNull(distanceCalculator);
+        if (points is null)
+        {
+            throw new ArgumentNullException(nameof(points));
+        }
+
+        if (distanceCalculator is null)
+        {
+            throw new ArgumentNullException(nameof(distanceCalculator));
+        }
 
         var neighborsSet = new Dictionary<T, IReadOnlyCollection<T>>(comparer);
         foreach (var point in points)
@@ -73,8 +80,15 @@ public static class Utils
         double epsilon)
         where T : notnull
     {
-        ArgumentNullException.ThrowIfNull(points);
-        ArgumentNullException.ThrowIfNull(distanceCalculator);
+        if (points is null)
+        {
+            throw new ArgumentNullException(nameof(points));
+        }
+
+        if (distanceCalculator is null)
+        {
+            throw new ArgumentNullException(nameof(distanceCalculator));
+        }
 
         return (T point) => points.Where(x => distanceCalculator(point, x) < epsilon).ToArray();
     }
@@ -96,8 +110,15 @@ public static class Utils
         GetDistance<T> distanceCalculator)
         where T : notnull
     {
-        ArgumentNullException.ThrowIfNull(points);
-        ArgumentNullException.ThrowIfNull(distanceCalculator);
+        if (points is null)
+        {
+            throw new ArgumentNullException(nameof(points));
+        }
+
+        if (distanceCalculator is null)
+        {
+            throw new ArgumentNullException(nameof(distanceCalculator));
+        }
 
         var distancesSet = new Dictionary<T, Dictionary<T, double>>(comparer);
         foreach (var point in points)
